@@ -43,6 +43,11 @@ public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ScanHistory scan = historyList.get(position);
+
+        if (scan.type.equals("7")) {
+            holder.typeTextView.setText("Text Type");
+        }
+
         holder.dataTextView.setText(scan.data);
         holder.timestampTextView.setText(new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date(scan.timestamp)));
 
@@ -92,11 +97,12 @@ public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView dataTextView, timestampTextView;
+        TextView dataTextView, timestampTextView, typeTextView;
         ImageButton deleteButton;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            typeTextView = itemView.findViewById(R.id.typeTextView);
             dataTextView = itemView.findViewById(R.id.dataTextView);
             timestampTextView = itemView.findViewById(R.id.timestampTextView);
             deleteButton = itemView.findViewById(R.id.deleteButton);
