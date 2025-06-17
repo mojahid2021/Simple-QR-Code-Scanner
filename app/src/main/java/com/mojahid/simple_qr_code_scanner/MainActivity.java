@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
     private PreviewView previewView;
     private ExecutorService cameraExecutor;
+    private boolean hasScanned = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +54,12 @@ public class MainActivity extends AppCompatActivity {
         Button historyButton = findViewById(R.id.historyButton);
         historyButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, HistoryActivity.class);
+            startActivity(intent);
+        });
+
+        Button generateQRButton = findViewById(R.id.generateQRButton);
+        generateQRButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, GenerateQRActivity.class);
             startActivity(intent);
         });
 
@@ -108,6 +115,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void scanQRCode(ImageProxy imageProxy) {
+        if (hasScanned) {
+            imageProxy.close();
+            return;
+        }
         @SuppressWarnings("UnsafeOptInUsageError")
         Image mediaImage = imageProxy.getImage();
         if (mediaImage != null) {
@@ -116,6 +127,9 @@ public class MainActivity extends AppCompatActivity {
 
             scanner.process(image)
                     .addOnSuccessListener(barcodes -> {
+                        if (!barcodes.isEmpty()) {
+                            hasScanned = true;
+                        }
                         for (Barcode barcode : barcodes) {
                             int valueType = barcode.getValueType();
                             String scannedData = barcode.getRawValue();
@@ -202,6 +216,8 @@ public class MainActivity extends AppCompatActivity {
                     })
                     .addOnFailureListener(e -> Log.e("MLKit", "QR Code scanning failed", e))
                     .addOnCompleteListener(task -> imageProxy.close());
+        } else {
+            imageProxy.close();
         }
     }
     private void saveToHistory(String data, int type) {
