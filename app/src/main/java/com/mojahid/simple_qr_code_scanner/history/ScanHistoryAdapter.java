@@ -20,16 +20,19 @@ import androidx.room.Room;
 import com.mojahid.simple_qr_code_scanner.R;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.ViewHolder> {
     private List<ScanHistory> historyList;
+    private List<ScanHistory> historyListFull;
     private Context context;
 
     public ScanHistoryAdapter(List<ScanHistory> historyList, Context context) {
         this.historyList = historyList;
+        this.historyListFull = new ArrayList<>(historyList);
         this.context = context;
     }
 
@@ -94,6 +97,26 @@ public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.
     @Override
     public int getItemCount() {
         return historyList.size();
+    }
+
+    public void filterList(String query) {
+        historyList.clear();
+        if (query == null || query.isEmpty()) {
+            historyList.addAll(historyListFull);
+        } else {
+            String lowerCaseQuery = query.toLowerCase();
+            for (ScanHistory scan : historyListFull) {
+                if (scan.data.toLowerCase().contains(lowerCaseQuery)) {
+                    historyList.add(scan);
+                }
+            }
+        }
+        notifyDataSetChanged();
+    }
+
+    public void updateFullList(List<ScanHistory> newList) {
+        historyListFull.clear();
+        historyListFull.addAll(newList);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

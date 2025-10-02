@@ -5,14 +5,19 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.Image;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Vibrator;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -42,12 +47,17 @@ public class MainActivity extends AppCompatActivity {
     private PreviewView previewView;
     private ExecutorService cameraExecutor;
     private boolean hasScanned = false;
+    private Camera camera;
+    private boolean isFlashlightOn = false;
+    private boolean isFrontCamera = false;
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
         previewView = findViewById(R.id.previewView);
         cameraExecutor = Executors.newSingleThreadExecutor();
 
@@ -63,6 +73,35 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        Button btnRescan = findViewById(R.id.btnRescan);
+        btnRescan.setOnClickListener(v -> {
+            hasScanned = false;
+            btnRescan.setVisibility(View.GONE);
+        });
+
+        Button btnFlashlight = findViewById(R.id.btnFlashlight);
+        btnFlashlight.setOnClickListener(v -> toggleFlashlight());
+
+        Button btnSwitchCamera = findViewById(R.id.btnSwitchCamera);
+        btnSwitchCamera.setOnClickListener(v -> switchCamera());
+
+        Button btnSettings = findViewById(R.id.btnSettings);
+        btnSettings.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
+        });
+
+        Button btnScanImage = findViewById(R.id.btnScanImage);
+        btnScanImage.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, ScanFromImageActivity.class);
+            startActivity(intent);
+        });
+
+        Button btnBatchScan = findViewById(R.id.btnBatchScan);
+        btnBatchScan.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, BatchScanActivity.class);
+            startActivity(intent);
+        });
 
         checkCameraPermission();
     }
@@ -96,7 +135,11 @@ public class MainActivity extends AppCompatActivity {
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
                 Preview preview = new Preview.Builder().build();
-                CameraSelector cameraSelector = new CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build();
+                
+                int lensFacing = isFrontCamera ? CameraSelector.LENS_FACING_FRONT : CameraSelector.LENS_FACING_BACK;
+                CameraSelector cameraSelector = new CameraSelector.Builder()
+                        .requireLensFacing(lensFacing)
+                        .build();
 
                 ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -105,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
                 imageAnalysis.setAnalyzer(cameraExecutor, this::scanQRCode);
 
                 cameraProvider.unbindAll();
-                cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageAnalysis);
+                camera = cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageAnalysis);
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
             } catch (Exception e) {
@@ -134,13 +177,22 @@ public class MainActivity extends AppCompatActivity {
                             int valueType = barcode.getValueType();
                             String scannedData = barcode.getRawValue();
                             saveToHistory(scannedData, valueType);
-                            copyToClipboard(scannedData);
+                            
+                            // Apply settings-based behavior
+                            if (preferences.getBoolean("copy_to_clipboard", true)) {
+                                copyToClipboard(scannedData);
+                            }
+                            
+                            // Provide feedback
+                            provideScanFeedback();
 
                             switch (valueType) {
                                 case Barcode.TYPE_URL:
                                     String url = barcode.getUrl().getUrl();
                                     showToast("Website: " + url);
-                                    openWebPage(url);
+                                    if (preferences.getBoolean("auto_open_url", false)) {
+                                        openWebPage(url);
+                                    }
                                     break;
 
                                 case Barcode.TYPE_PHONE:
@@ -212,6 +264,12 @@ public class MainActivity extends AppCompatActivity {
                                 default:
                                     showToast("Unknown QR Code");
                             }
+                            
+                            // Show rescan button after successful scan
+                            runOnUiThread(() -> {
+                                Button btnRescan = findViewById(R.id.btnRescan);
+                                btnRescan.setVisibility(View.VISIBLE);
+                            });
                         }
                     })
                     .addOnFailureListener(e -> Log.e("MLKit", "QR Code scanning failed", e))
@@ -295,6 +353,48 @@ public class MainActivity extends AppCompatActivity {
         String uri = "geo:" + lat + "," + lng;
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
         startActivity(intent);
+    }
+
+    private void toggleFlashlight() {
+        if (camera != null && camera.getCameraInfo().hasFlashUnit()) {
+            isFlashlightOn = !isFlashlightOn;
+            camera.getCameraControl().enableTorch(isFlashlightOn);
+            Button btnFlashlight = findViewById(R.id.btnFlashlight);
+            btnFlashlight.setText(isFlashlightOn ? "Flashlight: ON" : "Flashlight: OFF");
+        } else {
+            Toast.makeText(this, "Flash not available", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void switchCamera() {
+        isFrontCamera = !isFrontCamera;
+        isFlashlightOn = false;
+        startCamera();
+        Button btnSwitchCamera = findViewById(R.id.btnSwitchCamera);
+        btnSwitchCamera.setText(isFrontCamera ? "Back Camera" : "Front Camera");
+    }
+
+    private void provideScanFeedback() {
+        // Vibration feedback
+        if (preferences.getBoolean("vibration", true)) {
+            Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            if (vibrator != null && vibrator.hasVibrator()) {
+                vibrator.vibrate(200);
+            }
+        }
+
+        // Sound feedback
+        if (preferences.getBoolean("sound", true)) {
+            try {
+                MediaPlayer mediaPlayer = MediaPlayer.create(this, android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION));
+                if (mediaPlayer != null) {
+                    mediaPlayer.setOnCompletionListener(MediaPlayer::release);
+                    mediaPlayer.start();
+                }
+            } catch (Exception e) {
+                Log.e("ScanFeedback", "Failed to play sound", e);
+            }
+        }
     }
 
 
