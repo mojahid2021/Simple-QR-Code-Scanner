@@ -43,19 +43,19 @@ public class HistoryActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         SearchView searchView = findViewById(R.id.searchView);
-//        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-//            @Override
-//            public boolean onQueryTextSubmit(String query) {
-//                adapter.filterList(query);
-//                return true;
-//            }
-//
-//            @Override
-//            public boolean onQueryTextChange(String newText) {
-//                adapter.filterList(newText);
-//                return true;
-//            }
-//        });
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                adapter.filterList(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.filterList(newText);
+                return true;
+            }
+        });
 
         findViewById(R.id.btnExportCSV).setOnClickListener(v -> exportToCSV());
         findViewById(R.id.btnExportJSON).setOnClickListener(v -> exportToJSON());
@@ -121,6 +121,7 @@ public class HistoryActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 scanHistoryList.clear();
                 scanHistoryList.addAll(history);
+                adapter.updateFullList(history);
                 adapter.notifyDataSetChanged();
             });
         }).start();

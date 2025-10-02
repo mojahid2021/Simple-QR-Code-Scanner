@@ -13,6 +13,7 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -42,6 +43,9 @@ public class MainActivity extends AppCompatActivity {
     private PreviewView previewView;
     private ExecutorService cameraExecutor;
     private boolean hasScanned = false;
+    private Camera camera;
+    private boolean isFlashlightOn = false;
+    private boolean isFrontCamera = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +67,17 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        Button btnRescan = findViewById(R.id.btnRescan);
+        btnRescan.setOnClickListener(v -> {
+            hasScanned = false;
+            btnRescan.setVisibility(View.GONE);
+        });
+
+        Button btnFlashlight = findViewById(R.id.btnFlashlight);
+        btnFlashlight.setOnClickListener(v -> toggleFlashlight());
+
+        Button btnSwitchCamera = findViewById(R.id.btnSwitchCamera);
+        btnSwitchCamera.setOnClickListener(v -> switchCamera());
 
         checkCameraPermission();
     }
@@ -96,7 +111,11 @@ public class MainActivity extends AppCompatActivity {
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
                 Preview preview = new Preview.Builder().build();
-                CameraSelector cameraSelector = new CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build();
+                
+                int lensFacing = isFrontCamera ? CameraSelector.LENS_FACING_FRONT : CameraSelector.LENS_FACING_BACK;
+                CameraSelector cameraSelector = new CameraSelector.Builder()
+                        .requireLensFacing(lensFacing)
+                        .build();
 
                 ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -105,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
                 imageAnalysis.setAnalyzer(cameraExecutor, this::scanQRCode);
 
                 cameraProvider.unbindAll();
-                cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageAnalysis);
+                camera = cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageAnalysis);
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
             } catch (Exception e) {
@@ -212,6 +231,12 @@ public class MainActivity extends AppCompatActivity {
                                 default:
                                     showToast("Unknown QR Code");
                             }
+                            
+                            // Show rescan button after successful scan
+                            runOnUiThread(() -> {
+                                Button btnRescan = findViewById(R.id.btnRescan);
+                                btnRescan.setVisibility(View.VISIBLE);
+                            });
                         }
                     })
                     .addOnFailureListener(e -> Log.e("MLKit", "QR Code scanning failed", e))
@@ -295,6 +320,25 @@ public class MainActivity extends AppCompatActivity {
         String uri = "geo:" + lat + "," + lng;
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
         startActivity(intent);
+    }
+
+    private void toggleFlashlight() {
+        if (camera != null && camera.getCameraInfo().hasFlashUnit()) {
+            isFlashlightOn = !isFlashlightOn;
+            camera.getCameraControl().enableTorch(isFlashlightOn);
+            Button btnFlashlight = findViewById(R.id.btnFlashlight);
+            btnFlashlight.setText(isFlashlightOn ? "Flashlight: ON" : "Flashlight: OFF");
+        } else {
+            Toast.makeText(this, "Flash not available", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void switchCamera() {
+        isFrontCamera = !isFrontCamera;
+        isFlashlightOn = false;
+        startCamera();
+        Button btnSwitchCamera = findViewById(R.id.btnSwitchCamera);
+        btnSwitchCamera.setText(isFrontCamera ? "Back Camera" : "Front Camera");
     }
 
 
