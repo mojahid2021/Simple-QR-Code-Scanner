@@ -37,6 +37,12 @@
             android:name=".AboutActivity"
             android:exported="false" />
         <activity
+            android:name=".ScanFromImageActivity"
+            android:exported="false" />
+        <activity
+            android:name=".BatchScanActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

@@ -92,6 +92,15 @@
             android:layout_margin="4dp"/>
 
         <Button
+            android:id="@+id/btnScanImage"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="From Image"
+            android:textSize="12sp"
+            android:layout_margin="4dp"/>
+
+        <Button
             android:id="@+id/btnSettings"
             android:layout_width="0dp"
             android:layout_weight="1"
@@ -100,5 +109,13 @@
             android:textSize="12sp"
             android:layout_margin="4dp"/>
     </LinearLayout>
+
+    <Button
+        android:id="@+id/btnBatchScan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Batch Scan Mode"
+        android:layout_margin="8dp"
+        android:backgroundTint="@color/success"/>
 
 </LinearLayout>

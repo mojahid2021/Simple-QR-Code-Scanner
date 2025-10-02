@@ -91,6 +91,18 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        Button btnScanImage = findViewById(R.id.btnScanImage);
+        btnScanImage.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, ScanFromImageActivity.class);
+            startActivity(intent);
+        });
+
+        Button btnBatchScan = findViewById(R.id.btnBatchScan);
+        btnBatchScan.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, BatchScanActivity.class);
+            startActivity(intent);
+        });
+
         checkCameraPermission();
     }
 
