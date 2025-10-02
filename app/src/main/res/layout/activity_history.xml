@@ -27,13 +27,20 @@
             android:id="@+id/btnExportCSV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Export as CSV"/>
+            android:text="Export CSV"/>
 
         <Button
             android:id="@+id/btnExportJSON"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Export as JSON"/>
+            android:text="Export JSON"/>
+
+        <Button
+            android:id="@+id/btnClearAll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Clear All"
+            android:backgroundTint="#D32F2F"/>
 
     </LinearLayout>
 

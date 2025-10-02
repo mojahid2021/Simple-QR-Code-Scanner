@@ -5,12 +5,16 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.Image;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Vibrator;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -46,12 +50,14 @@ public class MainActivity extends AppCompatActivity {
     private Camera camera;
     private boolean isFlashlightOn = false;
     private boolean isFrontCamera = false;
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
         previewView = findViewById(R.id.previewView);
         cameraExecutor = Executors.newSingleThreadExecutor();
 
@@ -78,6 +84,12 @@ public class MainActivity extends AppCompatActivity {
 
         Button btnSwitchCamera = findViewById(R.id.btnSwitchCamera);
         btnSwitchCamera.setOnClickListener(v -> switchCamera());
+
+        Button btnSettings = findViewById(R.id.btnSettings);
+        btnSettings.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
+        });
 
         checkCameraPermission();
     }
@@ -153,13 +165,22 @@ public class MainActivity extends AppCompatActivity {
                             int valueType = barcode.getValueType();
                             String scannedData = barcode.getRawValue();
                             saveToHistory(scannedData, valueType);
-                            copyToClipboard(scannedData);
+                            
+                            // Apply settings-based behavior
+                            if (preferences.getBoolean("copy_to_clipboard", true)) {
+                                copyToClipboard(scannedData);
+                            }
+                            
+                            // Provide feedback
+                            provideScanFeedback();
 
                             switch (valueType) {
                                 case Barcode.TYPE_URL:
                                     String url = barcode.getUrl().getUrl();
                                     showToast("Website: " + url);
-                                    openWebPage(url);
+                                    if (preferences.getBoolean("auto_open_url", false)) {
+                                        openWebPage(url);
+                                    }
                                     break;
 
                                 case Barcode.TYPE_PHONE:
@@ -339,6 +360,29 @@ public class MainActivity extends AppCompatActivity {
         startCamera();
         Button btnSwitchCamera = findViewById(R.id.btnSwitchCamera);
         btnSwitchCamera.setText(isFrontCamera ? "Back Camera" : "Front Camera");
+    }
+
+    private void provideScanFeedback() {
+        // Vibration feedback
+        if (preferences.getBoolean("vibration", true)) {
+            Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            if (vibrator != null && vibrator.hasVibrator()) {
+                vibrator.vibrate(200);
+            }
+        }
+
+        // Sound feedback
+        if (preferences.getBoolean("sound", true)) {
+            try {
+                MediaPlayer mediaPlayer = MediaPlayer.create(this, android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION));
+                if (mediaPlayer != null) {
+                    mediaPlayer.setOnCompletionListener(MediaPlayer::release);
+                    mediaPlayer.start();
+                }
+            } catch (Exception e) {
+                Log.e("ScanFeedback", "Failed to play sound", e);
+            }
+        }
     }
 
 

@@ -1,3 +1,69 @@
 <resources>
-    <string name="app_name">Simple-QR-Code-Scanner</string>
+    <string name="app_name">QR Scanner Pro</string>
+    
+    <!-- Main Activity -->
+    <string name="scan_qr_code">Scan QR Code</string>
+    <string name="view_history">View History</string>
+    <string name="generate_qr">Generate QR Code</string>
+    <string name="settings">Settings</string>
+    <string name="rescan">Rescan</string>
+    <string name="flashlight_off">Flashlight: OFF</string>
+    <string name="flashlight_on">Flashlight: ON</string>
+    <string name="front_camera">Front Camera</string>
+    <string name="back_camera">Back Camera</string>
+    
+    <!-- Generate QR Activity -->
+    <string name="generate_qr_title">Generate QR Code</string>
+    <string name="select_type">Select Type</string>
+    <string name="generate">Generate QR Code</string>
+    <string name="save_qr">Save QR Code</string>
+    <string name="enter_text">Enter Text</string>
+    <string name="enter_url">Enter URL</string>
+    <string name="wifi_ssid">WiFi SSID</string>
+    <string name="wifi_password">Password</string>
+    <string name="wifi_encryption">Encryption Type (WPA/WEP/nopass)</string>
+    <string name="contact_name">Name</string>
+    <string name="contact_phone">Phone</string>
+    <string name="contact_email">Email</string>
+    
+    <!-- History Activity -->
+    <string name="scan_history">Scan History</string>
+    <string name="search_hint">Search history…</string>
+    <string name="export_csv">Export CSV</string>
+    <string name="export_json">Export JSON</string>
+    <string name="clear_all">Clear All</string>
+    <string name="delete">Delete</string>
+    
+    <!-- Settings Activity -->
+    <string name="settings_title">Settings</string>
+    <string name="appearance">Appearance</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="scanning">Scanning</string>
+    <string name="vibration_on_scan">Vibration on Scan</string>
+    <string name="sound_on_scan">Sound on Scan</string>
+    <string name="auto_copy_clipboard">Auto Copy to Clipboard</string>
+    <string name="behavior">Behavior</string>
+    <string name="auto_open_urls">Auto Open URLs</string>
+    
+    <!-- Messages -->
+    <string name="permission_required">Camera Permission Required</string>
+    <string name="permission_message">This app needs camera access to scan QR codes. Please enable it in settings.</string>
+    <string name="go_to_settings">Go to Settings</string>
+    <string name="cancel">Cancel</string>
+    <string name="copied_to_clipboard">Copied to clipboard!</string>
+    <string name="qr_generated">QR Code Generated</string>
+    <string name="qr_saved">QR Code saved to Pictures/QRCodes</string>
+    <string name="fill_all_fields">Please fill in all fields</string>
+    <string name="flash_not_available">Flash not available</string>
+    <string name="cannot_open_data">Cannot open this data</string>
+    <string name="clear_history_confirm">Are you sure you want to delete all scan history? This action cannot be undone.</string>
+    <string name="history_cleared">All history cleared</string>
+    
+    <!-- QR Types -->
+    <string name="qr_type_text">Text</string>
+    <string name="qr_type_url">URL</string>
+    <string name="qr_type_wifi">WiFi</string>
+    <string name="qr_type_contact">Contact Info</string>
+    <string name="qr_type_email">Email</string>
+    <string name="qr_type_phone">Phone</string>
 </resources>
