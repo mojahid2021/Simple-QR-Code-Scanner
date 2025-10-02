@@ -1,6 +1,16 @@
 # Advanced QR Code Scanner
 
+[![Android](https://img.shields.io/badge/Platform-Android-green.svg)](https://www.android.com/)
+[![API](https://img.shields.io/badge/API-24%2B-brightgreen.svg)](https://android-arsenal.com/api?level=24)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
 A feature-rich Android QR Code and Barcode scanner application with advanced capabilities for scanning, generating, and managing QR codes.
+
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
+![Build](https://img.shields.io/badge/build-passing-success)
+
+---
 
 ## 📱 Features
 
@@ -163,13 +173,16 @@ app/
 - User controls all data (export, delete, clear)
 
 ## 🤝 Contributing
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request. See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## 📝 License
-This project is open source and available under the MIT License.
+This project is open source and available under the [MIT License](LICENSE).
+
+## 📜 Changelog
+See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes.
 
 ## 👨‍💻 Developer
-Developed by mojahid2021
+Developed by [mojahid2021](https://github.com/mojahid2021)
 
 ## 🙏 Acknowledgments
 - Google ML Kit for barcode scanning
@@ -179,6 +192,12 @@ Developed by mojahid2021
 
 ## 📞 Support
 For issues, questions, or suggestions, please open an issue on GitHub.
+
+## ⭐ Show your support
+Give a ⭐️ if this project helped you!
+
+## 📸 Screenshots
+*Coming soon - Screenshots will be added after the app is built and tested*
 
 ---
 Made with ❤️ for the Android community
